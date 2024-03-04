@@ -1,4 +1,4 @@
-const API_BASE_ARM = "/api/v1/ManoftheMatch";
+const API_BASE_ARM = "/api/v1/manofthematch";
 
 const datos = require('../samples/ARM/index');
 var data = [];
@@ -88,7 +88,7 @@ module.exports = (app) => {
 
     // GET => Get data by host_location
 
-    app.get(API_BASE_ARM + "/:country",(req,res)=>{
+    app.get(API_BASE_ARM + "/:manofthematch",(req,res)=>{
         const PAIS = req.params.Team;
         const countryDatos = data.filter(p => p.Team === PAIS || p.Opponent === PAIS);
 
@@ -98,9 +98,29 @@ module.exports = (app) => {
             res.sendStatus(404, "NOT FOUND");
         }
     }),
- //PUT => Update resource by listing_id
-    app.put(API_BASE_ARM + "/:ManoftheMatch", (req,res) =>{
-        const ManoftheMatch = parseInt(req.params.ManoftheMatch);
+    app.post(API_BASE_ARM + "/", (req,res) => {
+        let newdata = req.body;
+        const equal = data.some(old => old.Team === newdata.Team && old.Opponent === newdata.Opponent && old.Date === newdata.Date);
+        if(equal){
+            // POST not allowed due to resource already existing
+            res.sendStatus(409, "CONFLICT");
+        } else if (!newdata || Object.keys(newdata).length === 0){
+            // If not valid JSON received
+            res.sendStatus(400, "BAD REQUEST");
+        } else {
+            // Valid POST
+            data.push(newdata);
+            res.sendStatus(201, "CREATED");
+        }
+    })
+    // PUT => Can't update root directory
+    app.put(API_BASE_ARM + "/", (req,res)=> {
+        let newdata = req.body;
+        res.sendStatus(405,"METHOD NOW ALLOWED");
+    }),
+ //PUT => Update resource
+    app.put(API_BASE_ARM + "/:manofthematch", (req,res) =>{
+        const ManoftheMatch = req.params.ManoftheMatch;
         let newdata = req.body;
 
     // Encuentra el índice del elemento con el ID dado en la lista de datos
@@ -127,18 +147,15 @@ module.exports = (app) => {
 
     // DELETE => Delete specific data
     app.delete(API_BASE_ARM + "/:ManoftheMatch", (req,res) => {
-        const ManoftheMatch = parseInt(req.params.ManoftheMatch);
-        const nuevosDatos = data.filter(entry => entry.listing_ManoftheMatch !== ManoftheMatch);
-
-        if(nuevosDatos.length < data.length){
-            //Delete data from specified filter
-            data = nuevosDatos;
-            res.sendStatus(200, "OK");
+        const ManoftheMatch = req.params.ManoftheMatch;
+        const initialLength = data.length;
+        data = data.filter(data => data.ManoftheMatch !== ManoftheMatch);
+        if (data.length < initialLength) {
+            res.status(200).send("DELETED");
         } else {
-            //Try to acces not existing resource
-            res.sendStatus(404, "NOT FOUND");
+            res.sendStatus(404, "COUNTRY NOT FOUND");
         }
-    })
+    }),
     //Post
     app.post(API_BASE_ARM + "/", (req, res) => {
         for (const dato of data) {
@@ -161,4 +178,11 @@ module.exports = (app) => {
         }
 
     }});
-}
+    // POST => Try to use not allowed method
+    app.post(API_BASE_ARM + "/:manofthematch", (req,res) =>{
+        const PAIS = req.params.ManoftheMatch;
+        let newdata = req.body;
+        res.sendStatus(405, "METHOD NOT ALLOWED");
+    });
+};
+
