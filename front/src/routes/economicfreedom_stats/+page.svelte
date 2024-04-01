@@ -175,14 +175,12 @@ async function searchListings() {
         let searchParams = new URLSearchParams();
         if (Object.keys(selectedFilter).length === 0) {
             selectedFilter = {
-                country: '',
-                year: '', 
-                overallScore: '', 
-                sizeOfGovernment: '', 
-                legalSystemsAndPropertyRight: '', 
-                soundMoney: '', 
-                freedomToTradeInternationally: '', 
-                regulation: ''
+                country: "''",
+                year: "", 
+                overallScore: "", 
+                sizeOfGovernment: "", 
+                legalSystemsAndPropertyRight: "", 
+                soundMoney: "", 
             };
         }
         for (const key in selectedFilter) {
